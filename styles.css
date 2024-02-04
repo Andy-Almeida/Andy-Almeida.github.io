@@ -13,7 +13,7 @@ header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-    padding: 20px;
+    padding: 20px 20px 20px 50px;
     position: fixed;
 	top: 0;
 	width: 100%;
@@ -23,6 +23,10 @@ header {
 
 header h1 {
 	margin: 0;
+}
+
+nav {
+	margin-right: 100px;
 }
 
 nav ul {
