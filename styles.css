@@ -10,7 +10,7 @@ body {
 }
 
 header {
-	dispaly: flex;
+	display: flex;
 	justify-content: space-between;
 	align-items: center;
     padding: 20px;
@@ -38,6 +38,11 @@ nav ul li {
 
 nav ul li:first-child {
  margin-left:0;
+}
+
+nav ul li a {
+	color: #fff;
+	text-decoration: none;
 }
 
 section {
