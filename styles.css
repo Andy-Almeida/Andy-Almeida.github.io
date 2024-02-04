@@ -28,6 +28,11 @@ header h1 {
 	margin: 0;
 }
 
+header a {
+	color: #fff;
+	text-decoration: none;
+}
+
 nav {
 	margin-right: 100px;
 }
