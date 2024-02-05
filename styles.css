@@ -77,6 +77,10 @@ header{
   .navbar .toggle_btn{
     display: block;
   }
+
+  .dropdown_menu {
+    display: block;
+  }
 }
 
 .dropdown_menu{
@@ -102,10 +106,6 @@ header{
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.dropdown_menu {
-  display: block;
 }
 
 @media (max-width: 576px){
