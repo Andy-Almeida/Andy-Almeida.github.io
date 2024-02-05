@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // Check if the URL contains #home and redirect to website.com if necessary
+    if (window.location.hash === '#home') {
+        window.location.href = 'https://website.com'; // Replace 'https://website.com' with your desired homepage URL
+    }
+
+document.addEventListener('DOMContentLoaded', function () {
     // JavaScript to offset scroll position by the height of the fixed header
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
