@@ -36,11 +36,3 @@ toggleBtn.onclick = function () {
   ? 'fa-solid fa-xmark'
   : 'fa-solid fa-bars'
 }
-
-/*
-const dropDownLink = document.querySelector('.dropdown_link')
-
-dropDownLink.onclick = function () {
-  dropDownMenu.classList.toggle('open')
-}
-*/
