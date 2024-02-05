@@ -24,14 +24,24 @@ header {
 	text-decoration: none;
 }
 
+a {
+  color: #fff;
+	text-decoration: none;
+}
+
+a:hover { 
+   color: green;
+} 
+
 header h1 {
 	margin: 0;
 }
 
-header a {
+/*header a {
 	color: #fff;
 	text-decoration: none;
 }
+*/
 
 nav {
 	margin-right: 100px;
@@ -52,10 +62,17 @@ nav ul li:first-child {
  margin-left:0;
 }
 
-nav ul li a {
+.navbar .toggle_btn {
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/*nav ul li a {
 	color: #fff;
 	text-decoration: none;
 }
+*/
 
 section {
     width: 80%;
