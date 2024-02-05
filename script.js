@@ -16,15 +16,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
-                })
-                dropDownMenu.classList.toggle('open');
+                });
+                dropDownMenu.classList.remove('open')
             } else {
                 // Otherwise, scroll to the target section with offset for fixed header
                 window.scrollTo({
                     top: target.offsetTop - headerHeight,
                     behavior: 'smooth'
-                })
-                dropDownMenu.classList.toggle('open');
+                });
+                dropDownMenu.classList.remove('open')
             }
         });
     });
