@@ -68,6 +68,38 @@ nav ul li:first-child {
   cursor: pointer;
 }
 
+@media (max-width: 992px){
+  .links {
+    display: none;
+  }
+}
+
+.dropdown_menu{
+  position: absolute;
+  right: 2rem;
+  top: 60px;
+  width: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dropdown_menu.open{
+  height:240px;
+}
+
+.dropdown_menu li{
+  padding: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropdown_menu {
+  display: block;
+}
+
 /*nav ul li a {
 	color: #fff;
 	text-decoration: none;
