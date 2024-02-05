@@ -17,14 +17,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     top: 0,
                     behavior: 'smooth'
                 });
-                dropDownMenu.classList.remove('open')
             } else {
                 // Otherwise, scroll to the target section with offset for fixed header
                 window.scrollTo({
                     top: target.offsetTop - headerHeight,
                     behavior: 'smooth'
                 });
-                dropDownMenu.classList.remove('open')
             }
         });
     });
