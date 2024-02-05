@@ -7,7 +7,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         const headerHeight = document.querySelector('header').offsetHeight; // Get the height of the fixed header
 
         window.scrollTo({
-            top: target.offsetTop - headerHeight,
+            top: target.offsetTop - headerHeight + 10,
             behavior: 'smooth'
         });
     });
