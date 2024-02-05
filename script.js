@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Check if the URL contains #home and redirect to website.com if necessary
     if (window.location.hash === '#home') {
-        window.location.href = 'https://website.com'; // Replace 'https://website.com' with your desired homepage URL
+        window.location.href = 'https://andy-almeida.github.io'; // Replace 'https://website.com' with your desired homepage URL
     }
 
 document.addEventListener('DOMContentLoaded', function () {
