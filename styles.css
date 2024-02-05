@@ -3,24 +3,24 @@ html {
 }
 
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f0f0;
-	padding-top: 60px;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+  padding-top: 60px;
 }
 
 header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-    padding: 20px 20px 20px 50px;
-    position: fixed;
+  padding: 20px 20px 20px 50px;
+  position: fixed;
 	top: 0;
 	width: 100%;
 	z-index: 1000;
-    background-color: #333;
-    color: #fff;
+  background-color: #333;
+  color: #fff;
 	text-decoration: none;
 }
 
@@ -48,8 +48,8 @@ nav {
 }
 
 nav ul {
-    list-style-type: none;
-    padding: 0;
+  list-style-type: none;
+  padding: 0;
 	margin: 0;
 	display: flex;
 }
@@ -59,7 +59,7 @@ nav ul li {
 }
 
 nav ul li:first-child {
- margin-left:0;
+  margin-left:0;
 }
 
 nav .toggle_btn {
@@ -108,27 +108,27 @@ nav .toggle_btn {
 */
 
 section {
-    width: 80%;
-    margin: 50px auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  margin: 50px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 section h2 {
-    text-align: center;
+  text-align: center;
 }
 
 section article {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #333;
-    color: #fff;
-    width: 100%;
+  text-align: center;
+  padding: 20px;
+  background-color: #333;
+  color: #fff;
+  width: 100%;
 }
 
