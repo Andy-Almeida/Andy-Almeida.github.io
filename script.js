@@ -29,6 +29,7 @@ const toggleBtnIcon = document.querySelector('.toggle_btn i')
 const dropDownMenu = document.querySelector('.dropdown_menu')
 
 toggleBtn.onclick = function () {
+  dropDownMenu.classList.add('open')
   dropDownMenu.classList.toggle('open')
   const isOpen = dropDownMenu.classList.contains('open')
   
