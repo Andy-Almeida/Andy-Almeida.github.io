@@ -18,14 +18,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     behavior: 'smooth'
                 });
                 const isOpen = dropDownMenu.classList.contains('open')
-                
                 if (isOpen){
                     dropDownMenu.classList.toggle('open')
+                    toggleBtnIcon.classList = 'fa-solid fa-bars'
+                    
                 }
-
-                toggleBtnIcon.classList = isOpen
-                ? 'fa-solid fa-xmark'
-                : 'fa-solid fa-bars'
+                
             } else {
                 // Otherwise, scroll to the target section with offset for fixed header
                 window.scrollTo({
@@ -35,10 +33,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const isOpen = dropDownMenu.classList.contains('open')
                 if (isOpen){
                     dropDownMenu.classList.toggle('open')
+                    toggleBtnIcon.classList = 'fa-solid fa-bars'
                 }
-                toggleBtnIcon.classList = isOpen
-                ? 'fa-solid fa-xmark'
-                : 'fa-solid fa-bars'
             }
         });
     });
