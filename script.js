@@ -1,3 +1,7 @@
+const toggleBtn = document.querySelector('.toggle_btn')
+const toggleBtnIcon = document.querySelector('.toggle_btn i')
+const dropDownMenu = document.querySelector('.dropdown_menu')
+
 document.addEventListener('DOMContentLoaded', function () {
     // JavaScript to offset scroll position by the height of the fixed header
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -13,20 +17,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     top: 0,
                     behavior: 'smooth'
                 });
+                dropDownMenu.classList.toggle('open')
+                const isOpen = dropDownMenu.classList.contains('open')
+                
+                toggleBtnIcon.classList = isOpen
+                ? 'fa-solid fa-xmark'
+                : 'fa-solid fa-bars'
             } else {
                 // Otherwise, scroll to the target section with offset for fixed header
                 window.scrollTo({
                     top: target.offsetTop - headerHeight,
                     behavior: 'smooth'
                 });
+                dropDownMenu.classList.toggle('open')
+                const isOpen = dropDownMenu.classList.contains('open')
+                
+                toggleBtnIcon.classList = isOpen
+                ? 'fa-solid fa-xmark'
+                : 'fa-solid fa-bars'
             }
         });
     });
 });
-
-const toggleBtn = document.querySelector('.toggle_btn')
-const toggleBtnIcon = document.querySelector('.toggle_btn i')
-const dropDownMenu = document.querySelector('.dropdown_menu')
 
 toggleBtn.onclick = function () {
   dropDownMenu.classList.toggle('open')
