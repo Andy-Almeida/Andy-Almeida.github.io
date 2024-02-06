@@ -17,9 +17,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     top: 0,
                     behavior: 'smooth'
                 });
-                dropDownMenu.classList.toggle('open')
                 const isOpen = dropDownMenu.classList.contains('open')
                 
+                if (isOpen){
+                    dropDownMenu.classList.toggle('open')
+                }
+
                 toggleBtnIcon.classList = isOpen
                 ? 'fa-solid fa-xmark'
                 : 'fa-solid fa-bars'
@@ -29,9 +32,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     top: target.offsetTop - headerHeight,
                     behavior: 'smooth'
                 });
-                dropDownMenu.classList.toggle('open')
                 const isOpen = dropDownMenu.classList.contains('open')
-                
+                if (isOpen){
+                    dropDownMenu.classList.toggle('open')
+                }
                 toggleBtnIcon.classList = isOpen
                 ? 'fa-solid fa-xmark'
                 : 'fa-solid fa-bars'
