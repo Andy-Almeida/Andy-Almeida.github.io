@@ -352,7 +352,9 @@ p {
   margin-inline-start: 0px;
   margin-inline-end: 0px;
 }
-section {
+section#portfolio,
+section#about-me,
+section#contact-me{
   *{
     text-align: center;
     font-size: 1.2rem;
