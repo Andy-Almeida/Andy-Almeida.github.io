@@ -352,10 +352,35 @@ p {
   margin-inline-start: 0px;
   margin-inline-end: 0px;
 }
+section {
+  *{
+    text-align: center;
+    font-size: 1.2rem;
+    padding:0 20%;
+  }
+  p{
+    text-align: center;
+    padding:0 20%;
+    
+  }
+  ul {
+    
+    text-align: center;
+  }
+  h2{
+    text-align: center;
+  }
 
-section h2 {
-  text-align: center;
+  h3{
+    text-align: center;
+  }
+
+  a {
+    padding:0;
+  }
 }
+
+
 
 section article {
   margin-bottom: 20px;
