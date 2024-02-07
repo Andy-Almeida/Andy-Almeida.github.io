@@ -352,25 +352,40 @@ p {
   margin-inline-start: 0px;
   margin-inline-end: 0px;
 }
+
 section#portfolio,
 section#about-me,
 section#contact-me{
   *{
     text-align: center;
     font-size: 1.2rem;
-    padding:0 20%;
+    line-height: 2rem;
+  }
+  article {
+    border: green 1px solid;
+    width: fit-content;
+    margin: 2rem auto;
+    padding: 1rem 8rem;
   }
   p{
     text-align: center;
-    padding:0 20%;
-    
+    padding:0 10%;
+    line-height: 3rem;
   }
   ul {
     
     text-align: center;
   }
   h2{
+    border: green 1px solid;
+    background-color: green;
     text-align: center;
+    width: fit-content;
+    justify-content: center;
+    padding: 10px;
+    align-items: center;
+    margin: auto;
+    margin-bottom: 1rem;
   }
 
   h3{
