@@ -148,7 +148,6 @@ section {
 }
 
 .hero {
-  margin-top: 80px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -181,14 +180,13 @@ section {
   justify-content: center;
   align-items: center;
   height: 65rem;
-  gap: 10rem;
+  gap: rem;
   position: relative;
 
   @media (max-width: 900px){
     flex-direction: column;
     text-align: center;
     height: auto;
-    gap: 3rem;
   }
 
   @media (min-width: 1600px) {
