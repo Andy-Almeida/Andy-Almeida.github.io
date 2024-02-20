@@ -360,17 +360,55 @@ section#contact-me{
     text-align: center;
     font-size: 1.2rem;
     line-height: 2rem;
+    transition: all 1s ease-in-out;
+
+    @media (max-width: 800px) {
+      font-size: 1rem;
+    }
+
+    @media (max-width: 500px) {
+      font-size: .7rem;
+      line-height: 1rem;
+    }
   }
   article {
     border: green 1px solid;
     width: fit-content;
     margin: 2rem auto;
-    padding: 1rem 8rem;
+    padding: 1rem 2rem;
+
+    @media (max-width: 1200px) {
+      padding: 1rem 2rem;
+    }
+
+    @media (max-width: 1100px) {
+      padding: 1rem 1rem;
+    }
   }
   p{
     text-align: center;
-    padding:0 10%;
+    margin: 0 20%;
     line-height: 3rem;
+
+    @media (max-width: 1200px) {
+      margin: 0 15%
+    }
+
+    @media (max-width: 1000px) {
+      margin: 0 10%
+    }
+
+    @media (max-width: 800px) {
+      line-height: 2rem;
+    }
+    @media (max-width: 700px) {
+      padding: 0;
+    }
+
+    @media (max-width: 500px) {
+      font-size: .7rem;
+      line-height: 1rem;
+    }
   }
   ul {
     
@@ -385,7 +423,6 @@ section#contact-me{
     padding: 10px;
     align-items: center;
     margin: auto;
-    margin-bottom: 1rem;
   }
 
   h3{
@@ -394,6 +431,9 @@ section#contact-me{
 
   a {
     padding:0;
+  }
+  .trailing{
+    margin-top: 2rem;
   }
 }
 
