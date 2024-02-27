@@ -563,8 +563,16 @@ section#contact-me{
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 3rem;
     position: relative;
+
+    @media (max-width:700px) {
+      gap: 1rem;
+    }
+
+    @media screen {
+      
+    }
   }
   #GithubLink{
     background-image: url(/static/GithubIcon.png);
