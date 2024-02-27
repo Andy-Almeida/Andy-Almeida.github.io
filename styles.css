@@ -329,19 +329,19 @@ section#hero{
   @media (max-width: 900px){
     width: 22rem;
     height: 22rem;
-    margin-top: 120px;
+    margin-top: 0px;
   }
 
   @media (max-width: 500px) {
     width: 22rem;
     height: 22rem;
-    margin-top: 50px;
+    margin-top: -80px;
   }
 
   @media (max-width: 400px) {
     width: 280px;
     height: 280px;
-    margin-top: 40px;
+    margin-top: -100px;
   }
 
   @media (max-width: 300px) {
