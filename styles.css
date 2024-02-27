@@ -246,7 +246,7 @@ section {
     line-height: 1.6;
 
     @media (max-width: 900px) {
-      margin-bottom: 5rem;
+      margin-bottom: 1rem;
     }
 
     @media (max-width: 500px) {
@@ -283,6 +283,26 @@ section {
         color: green;
       }
     }
+  }
+  #LinkIcons{
+    @media (max-width:500px) {
+      margin-top: -5rem;
+    }
+  }
+
+  #GithubLink{
+    width: 55px;
+    height: 50px;
+  }
+  
+  #LinkedInLink{
+    width: 50px;
+    height: 50px;
+  }
+  
+  #ResumeLink{
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -564,50 +584,52 @@ section#contact-me{
   }
   }
 
-  #LinkIcons{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 3rem;
-    position: relative;
+  
+}
 
-    @media (max-width:700px) {
-      gap: 1rem;
-    }
+#LinkIcons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  position: relative;
 
-    @media (max-width: 330px){
-      display: block;
-    }
+  @media (max-width:700px) {
+    gap: 1rem;
   }
-  #GithubLink{
-    background-image: url(/static/GithubIcon.png);
+
+  @media (max-width: 330px){
     display: block;
-    width: 77px;
-    height: 70px;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
   }
+}
+#GithubLink{
+  background-image: url(/static/GithubIcon.png);
+  display: block;
+  width: 77px;
+  height: 70px;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
 
-  #LinkedInLink{
-    background-image: url(/static/LinkedInIcon.png);
-    display: block;
-    width: 75px;
-    height: 75px;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-  }
+#LinkedInLink{
+  background-image: url(/static/LinkedInIcon.png);
+  display: block;
+  width: 75px;
+  height: 75px;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
 
-  #ResumeLink{
-    background-image: url(/static/ResumeIcon.png);
-    display: block;
-    width: 75px;
-    height: 75px;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-  }
+#ResumeLink{
+  background-image: url(/static/ResumeIcon.png);
+  display: block;
+  width: 75px;
+  height: 75px;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
 section article {
