@@ -313,20 +313,20 @@ section#hero{
   }
 
   @media (max-width: 500px) {
-    width: 20rem;
-    height: 20rem;
+    width: 22rem;
+    height: 22rem;
     margin-top: 50px;
   }
 
   @media (max-width: 400px) {
-    width: 240px;
-    height: 240px;
+    width: 280px;
+    height: 280px;
     margin-top: 40px;
   }
 
   @media (max-width: 300px) {
-    width: 180px;
-    height: 180px;
+    width: 240px;
+    height: 240px;
     margin-top: 30px;
   }
 
@@ -565,7 +565,6 @@ section#contact-me{
   }
 
   #LinkIcons{
-    display: block;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -576,8 +575,8 @@ section#contact-me{
       gap: 1rem;
     }
 
-    @media screen {
-      
+    @media (max-width: 330px){
+      display: block;
     }
   }
   #GithubLink{
