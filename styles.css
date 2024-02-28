@@ -370,7 +370,7 @@ section#hero{
 }
 
 .hero-img {
-  animation: morph 8s ease-in-out infinite;
+  animation: morph 6s ease-in-out infinite;
 }
 
 
@@ -449,7 +449,11 @@ section#contact-me{
   }
 
   li {
-    font-size: 1rem;
+    font-size: 1.2rem;
+
+    @media (max-width:800px){
+      font-size: 1rem;
+    }
   }
 
   .underline-bold {
@@ -539,7 +543,11 @@ section#contact-me{
     }
 
     #Innova{
-      font-size: 1rem;
+      font-size: 1.2rem;
+
+      @media (max-width: 800px) {
+        font-size: 1rem;
+      }
     }
   }
 
@@ -583,8 +591,6 @@ section#contact-me{
     height: 180px;
   }
   }
-
-  
 }
 
 #LinkIcons{
