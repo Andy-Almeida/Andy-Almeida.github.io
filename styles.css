@@ -673,9 +673,9 @@ a:hover {
 }
 
 .timeline-content .description {
-  font-style: italic;
   color: var(--text-muted);
   margin-bottom: var(--spacing-sm);
+  font-family: var(--font-mono);
 }
 
 .timeline-content ul {
@@ -687,6 +687,7 @@ a:hover {
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
   position: relative;
+  font-family: var(--font-mono);
 }
 
 .timeline-content li::marker {
@@ -786,6 +787,7 @@ a:hover {
 .project-content p {
   flex-grow: 1;
   margin-bottom: var(--spacing-sm);
+  font-family: var(--font-mono);
 }
 
 .project-skills {
