@@ -201,6 +201,24 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
+  position: relative;
+  padding: 0.25rem 0;
+}
+
+.nav-brand::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--accent-primary);
+  transition: width var(--transition-fast);
+}
+
+.nav-brand:hover::after {
+  width: 100%;
 }
 
 .terminal-prompt {
@@ -394,7 +412,7 @@ a:hover {
 }
 
 .hero-description {
-  color: var(--text-secondary);
+  color: #d4d4d4;
   font-size: 1.1rem;
   line-height: 1.8;
   margin-bottom: var(--spacing-md);
