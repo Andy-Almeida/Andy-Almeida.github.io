@@ -190,7 +190,7 @@ class ComponentRenderer {
       // Handle multiple images or video
       let mediaHTML = '';
       if (project.video) {
-        mediaHTML = `<iframe class="project-video" src="${project.video}" allowfullscreen loading="lazy"></iframe>`;
+        mediaHTML = `<iframe class="project-video" src="${project.video}" title="${project.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
       } else if (project.image) {
         mediaHTML = `<img src="${project.image}" alt="${project.title}" class="project-image" loading="lazy">`;
       }
