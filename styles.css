@@ -97,16 +97,32 @@ body {
 /* ============================================
    TYPOGRAPHY
    ============================================ */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--spacing-sm);
 }
 
-h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
-h2 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
-h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
-h4 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h4 {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+}
 
 p {
   margin-bottom: var(--spacing-sm);
@@ -261,6 +277,63 @@ a:hover {
   width: 100%;
 }
 
+/* Dropdown Navigation */
+.nav-item-with-dropdown {
+  position: relative;
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 8px;
+  padding: 0.5rem 0;
+  min-width: 250px;
+  box-shadow: 0 8px 20px var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all var(--transition-fast);
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.nav-item-with-dropdown:hover .nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-dropdown-item {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  transition: all var(--transition-fast);
+  border-left: 3px solid transparent;
+}
+
+.nav-dropdown-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-primary);
+  border-left-color: var(--accent-primary);
+}
+
+.nav-dropdown-item-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.nav-dropdown-item-company {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .theme-toggle,
 .mobile-toggle {
   background: none;
@@ -360,9 +433,17 @@ a:hover {
   display: block;
 }
 
-.btn-close { background-color: #ff5f56; }
-.btn-minimize { background-color: #ffbd2e; }
-.btn-maximize { background-color: #27c93f; }
+.btn-close {
+  background-color: #ff5f56;
+}
+
+.btn-minimize {
+  background-color: #ffbd2e;
+}
+
+.btn-maximize {
+  background-color: #27c93f;
+}
 
 .terminal-title {
   font-family: var(--font-mono);
@@ -520,10 +601,23 @@ a:hover {
 }
 
 @keyframes morph {
-  0%, 100% { border-radius: 20% 80% 30% 70% / 60% 30% 70% 40%; }
-  25% { border-radius: 30% 70% 70% 30% / 50% 60% 40% 50%; }
-  50% { border-radius: 50% 50% 30% 70% / 30% 70% 30% 70%; }
-  75% { border-radius: 70% 30% 50% 50% / 60% 40% 60% 40%; }
+
+  0%,
+  100% {
+    border-radius: 20% 80% 30% 70% / 60% 30% 70% 40%;
+  }
+
+  25% {
+    border-radius: 30% 70% 70% 30% / 50% 60% 40% 50%;
+  }
+
+  50% {
+    border-radius: 50% 50% 30% 70% / 30% 70% 30% 70%;
+  }
+
+  75% {
+    border-radius: 70% 30% 50% 50% / 60% 40% 60% 40%;
+  }
 }
 
 .scroll-indicator {
@@ -542,9 +636,22 @@ a:hover {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-  40% { transform: translateX(-50%) translateY(-10px); }
-  60% { transform: translateX(-50%) translateY(-5px); }
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  40% {
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  60% {
+    transform: translateX(-50%) translateY(-5px);
+  }
 }
 
 /* ============================================
@@ -622,6 +729,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
+  scroll-margin-top: 100px;
 }
 
 .timeline-dot {
@@ -921,9 +1029,17 @@ a:hover {
   box-shadow: 0 0 10px var(--accent-glow);
 }
 
-.skill-progress.advanced { width: 90%; }
-.skill-progress.intermediate { width: 70%; }
-.skill-progress.beginner { width: 40%; }
+.skill-progress.advanced {
+  width: 90%;
+}
+
+.skill-progress.intermediate {
+  width: 70%;
+}
+
+.skill-progress.beginner {
+  width: 40%;
+}
 
 .soft-skill {
   background-color: var(--bg-tertiary);
@@ -1201,6 +1317,7 @@ a:hover {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1220,6 +1337,7 @@ section {
 
 /* Print styles */
 @media print {
+
   .navbar,
   .theme-toggle,
   .mobile-toggle,

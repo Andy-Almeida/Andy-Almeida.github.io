@@ -162,8 +162,11 @@ class ComponentRenderer {
       const highlightsHTML = exp.highlights.map(h => `<li>${h}</li>`).join('');
       const skillsHTML = exp.skills.map(s => `<span class="timeline-skill">${s}</span>`).join('');
 
+      // Create a unique ID for each experience item
+      const expId = `exp-${index}`;
+
       return `
-        <div class="timeline-item fade-in">
+        <div class="timeline-item fade-in" id="${expId}">
           <div class="timeline-dot"></div>
           <div class="timeline-content ${featuredClass}">
             <h3>${exp.title}</h3>
@@ -179,6 +182,27 @@ class ComponentRenderer {
     }).join('');
 
     document.getElementById('experienceTimeline').innerHTML = timelineHTML;
+
+    // Populate the navigation dropdown
+    this.renderExperienceDropdown();
+  }
+
+  // Render Experience Dropdown in Navigation
+  renderExperienceDropdown() {
+    const dropdownHTML = this.data.experience.map((exp, index) => {
+      const expId = `exp-${index}`;
+      return `
+        <a href="#${expId}" class="nav-dropdown-item">
+          <span class="nav-dropdown-item-title">${exp.title}</span>
+          <span class="nav-dropdown-item-company">${exp.company}</span>
+        </a>
+      `;
+    }).join('');
+
+    const dropdown = document.getElementById('experienceDropdown');
+    if (dropdown) {
+      dropdown.innerHTML = dropdownHTML;
+    }
   }
 
   // Render Projects
