@@ -669,7 +669,9 @@ a:hover {
   border: 2px solid var(--border-color);
   border-radius: 12px;
   padding: var(--spacing-md);
-  transition: all var(--transition-normal);
+  transition: border-color var(--transition-normal),
+              box-shadow var(--transition-normal),
+              transform var(--transition-normal);
 }
 
 .education-card:hover {
@@ -854,7 +856,9 @@ a:hover {
   border: 2px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition: border-color var(--transition-normal),
+              box-shadow var(--transition-normal),
+              transform var(--transition-normal);
   display: flex;
   flex-direction: column;
 }
@@ -1062,6 +1066,22 @@ a:hover {
   border-radius: 8px;
   text-align: center;
   border: 2px solid var(--accent-primary);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.language-item:hover {
+  background-color: var(--accent-primary);
+  box-shadow: 0 8px 30px var(--shadow);
+  transform: translateY(-5px);
+}
+
+.language-item:hover .language-name {
+  color: var(--bg-primary);
+}
+
+.language-item:hover .language-proficiency {
+  color: var(--bg-primary);
 }
 
 .language-name {
