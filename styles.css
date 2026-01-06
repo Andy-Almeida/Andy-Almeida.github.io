@@ -759,11 +759,6 @@ a:hover {
   transform: translateY(-5px);
 }
 
-.timeline-content.featured {
-  border-color: var(--accent-primary);
-  border-width: 3px;
-}
-
 .timeline-content h3 {
   color: var(--accent-primary);
   font-size: 1.5rem;
@@ -868,11 +863,6 @@ a:hover {
   border-color: var(--accent-primary);
   box-shadow: 0 8px 30px var(--shadow);
   transform: translateY(-5px);
-}
-
-.project-card.featured {
-  border-color: var(--accent-primary);
-  border-width: 3px;
 }
 
 .project-image {
@@ -1249,6 +1239,112 @@ a:hover {
   .skills-container {
     grid-template-columns: 1fr;
   }
+
+  /* Timeline: Card-based layout for mobile */
+  .timeline {
+    padding-left: 0;
+  }
+
+  .timeline::before {
+    display: none;
+  }
+
+  .timeline-dot {
+    display: none;
+  }
+
+  .timeline-item {
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline-content {
+    border-left: 4px solid var(--accent-primary);
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Projects Grid Optimizations */
+  .project-image,
+  .project-video {
+    height: 200px;
+  }
+
+  .project-content {
+    padding: 1.5rem;
+  }
+
+  .projects-grid {
+    gap: 1.5rem;
+  }
+
+  /* Hero Section Improvements */
+  .terminal-body {
+    padding: 1.5rem 1rem;
+  }
+
+  .image-container {
+    max-width: 250px;
+  }
+
+  .hero-cta {
+    gap: 0.75rem;
+  }
+
+  .command-line {
+    font-size: 0.8rem;
+  }
+
+  /* Skills Section Optimizations */
+  .skill-category {
+    padding: 1.5rem;
+  }
+
+  .category-title {
+    font-size: 1.1rem;
+  }
+
+  .skills-list {
+    gap: 0.75rem;
+  }
+
+  .skill-bar {
+    height: 6px;
+  }
+
+  /* Navigation Improvements */
+  .nav-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .terminal-prompt {
+    font-size: 0.9rem;
+  }
+
+  .mobile-menu.active {
+    max-height: 500px;
+  }
+
+  .mobile-link {
+    padding: 0.875rem 1rem;
+  }
+
+  /* General Mobile Enhancements */
+  .section-header {
+    font-size: 0.8rem;
+  }
+
+  .education-card {
+    padding: 1.5rem;
+  }
+
+  .contact-content {
+    padding: 0 0.5rem;
+  }
+
+  .contact-item {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -1293,14 +1389,6 @@ a:hover {
 
   .projects-grid {
     grid-template-columns: 1fr;
-  }
-
-  .timeline {
-    padding-left: 2rem;
-  }
-
-  .timeline-dot {
-    left: -2rem;
   }
 
   .languages-list {
