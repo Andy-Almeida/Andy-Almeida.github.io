@@ -1195,6 +1195,10 @@ a:hover {
     display: flex;
   }
 
+  .brand-text {
+    display: none;
+  }
+
   .hero-content {
     grid-template-columns: 1fr;
     text-align: center;
