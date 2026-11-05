@@ -3,35 +3,68 @@
 // Component System & Interactions
 // ============================================
 
+const prefersReducedMotion = window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Height of the fixed header bar, NOT counting the mobile dropdown menu.
+// (The menu lives inside .navbar; while it's open or animating closed,
+// .navbar.offsetHeight includes it, which made phone links land ~325px high.)
+function navBarHeight() {
+  const navbar = document.querySelector('.navbar');
+  const menu = document.getElementById('mobileMenu');
+  return navbar.offsetHeight - (menu ? menu.offsetHeight : 0);
+}
+
+// localStorage can throw in private windows / when blocked, so wrap it.
+const safeStorage = {
+  get(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+  }
+};
+
 // ============================================
 // THEME MANAGEMENT
 // ============================================
 class ThemeManager {
   constructor() {
-    this.theme = localStorage.getItem('theme') || 'light';
+    // The inline script in <head> already picked a theme (saved or OS preference)
+    this.theme = document.documentElement.getAttribute('data-theme') || 'light';
     this.themeToggle = document.getElementById('themeToggle');
     this.init();
   }
 
   init() {
-    // Apply saved theme
-    document.documentElement.setAttribute('data-theme', this.theme);
-    this.updateToggleIcon();
-
-    // Add event listener
+    this.apply();
     this.themeToggle.addEventListener('click', () => this.toggleTheme());
+
+    // Follow OS theme changes until the visitor picks one explicitly
+    if (window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const onChange = (e) => {
+        if (!safeStorage.get('theme')) {
+          this.theme = e.matches ? 'dark' : 'light';
+          this.apply();
+        }
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+    }
   }
 
   toggleTheme() {
     this.theme = this.theme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', this.theme);
-    localStorage.setItem('theme', this.theme);
-    this.updateToggleIcon();
+    safeStorage.set('theme', this.theme);
+    this.apply();
   }
 
-  updateToggleIcon() {
+  apply() {
+    document.documentElement.setAttribute('data-theme', this.theme);
     const icon = this.themeToggle.querySelector('i');
     icon.className = this.theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+    this.themeToggle.setAttribute('aria-label',
+      this.theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
   }
 }
 
@@ -49,61 +82,113 @@ class MobileMenu {
   init() {
     this.mobileToggle.addEventListener('click', () => this.toggle());
 
-    // Close menu when clicking a link
     this.mobileLinks.forEach(link => {
       link.addEventListener('click', () => this.close());
     });
 
-    // Close menu when clicking outside
     document.addEventListener('click', (e) => {
       if (!this.mobileToggle.contains(e.target) && !this.mobileMenu.contains(e.target)) {
         this.close();
       }
     });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') this.close();
+    });
   }
 
   toggle() {
     const isActive = this.mobileMenu.classList.toggle('active');
-    const icon = this.mobileToggle.querySelector('i');
-    icon.className = isActive ? 'fas fa-xmark' : 'fas fa-bars';
+    this.setIcon(isActive);
   }
 
   close() {
     this.mobileMenu.classList.remove('active');
+    this.setIcon(false);
+  }
+
+  setIcon(isActive) {
     const icon = this.mobileToggle.querySelector('i');
-    icon.className = 'fas fa-bars';
+    icon.className = isActive ? 'fas fa-xmark' : 'fas fa-bars';
+    this.mobileToggle.setAttribute('aria-expanded', String(isActive));
   }
 }
 
 // ============================================
 // SMOOTH SCROLLING
+// Uses event delegation so links rendered later (e.g. the experience
+// dropdown) also scroll smoothly with the correct navbar offset.
 // ============================================
 class SmoothScroll {
   constructor() {
-    this.links = document.querySelectorAll('a[href^="#"]');
-    this.init();
-  }
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
 
-  init() {
-    this.links.forEach(link => {
-      link.addEventListener('click', (e) => {
+      const targetId = link.getAttribute('href');
+      if (targetId === '#' || targetId === '#main') return;
+
+      const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+      if (targetId === '#home') {
         e.preventDefault();
-        const targetId = link.getAttribute('href');
+        window.scrollTo({ top: 0, behavior });
+        history.replaceState(null, '', ' ');
+        return;
+      }
 
-        if (targetId === '#home') {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          const target = document.querySelector(targetId);
-          if (target) {
-            const headerHeight = document.querySelector('.navbar').offsetHeight;
-            const targetPosition = target.offsetTop - headerHeight;
-            window.scrollTo({ top: targetPosition, behavior: 'smooth' });
-          }
-        }
-      });
+      const target = document.querySelector(targetId);
+      if (!target) return;
+
+      e.preventDefault();
+      const headerHeight = navBarHeight();
+      const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight - 16;
+      window.scrollTo({ top: targetPosition, behavior });
+      history.replaceState(null, '', targetId);
     });
   }
 }
+
+// ============================================
+// DATE HELPERS
+// ============================================
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july',
+  'august', 'september', 'october', 'november', 'december'];
+
+// "June 2026" -> { year: 2026, month: 5 }   "Present" -> now
+function parseMonthYear(str) {
+  const s = str.trim().toLowerCase();
+  if (s === 'present') {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  }
+  const [monthName, year] = s.split(/\s+/);
+  const month = MONTHS.indexOf(monthName);
+  if (month === -1 || isNaN(parseInt(year, 10))) return null;
+  return { year: parseInt(year, 10), month };
+}
+
+// "June 2026 - Present" -> "6 mos", "December 2022 - January 2025" -> "2 yrs 2 mos"
+function formatDuration(range) {
+  const parts = range.split(/\s+[-–—]\s+/);
+  if (parts.length !== 2) return '';
+  const start = parseMonthYear(parts[0]);
+  const end = parseMonthYear(parts[1]);
+  if (!start || !end) return '';
+
+  // Inclusive month count (matches how LinkedIn counts)
+  const total = (end.year - start.year) * 12 + (end.month - start.month) + 1;
+  if (total <= 0) return '';
+
+  const years = Math.floor(total / 12);
+  const months = total % 12;
+  const out = [];
+  if (years) out.push(`${years} yr${years > 1 ? 's' : ''}`);
+  if (months) out.push(`${months} mo${months > 1 ? 's' : ''}`);
+  return out.join(' ');
+}
+
+const isCurrent = (range) => /present\s*$/i.test(range);
 
 // ============================================
 // COMPONENT RENDERER
@@ -113,113 +198,235 @@ class ComponentRenderer {
     this.data = data;
   }
 
+  socialLinksHTML() {
+    const { links } = this.data.personal;
+    return `
+      <a href="${links.linkedin}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn">
+        <i class="fab fa-linkedin"></i>
+      </a>
+      <a href="${links.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+      <a href="${links.resume}" target="_blank" rel="noopener noreferrer" aria-label="Resume" title="Resume">
+        <i class="fas fa-file-alt"></i>
+      </a>
+    `;
+  }
+
   // Render Hero Section
   renderHero() {
-    const { personal } = this.data;
+    const { personal, stats } = this.data;
 
     document.getElementById('heroTitle').textContent = personal.name;
     document.getElementById('heroSubtitle').textContent = personal.tagline;
     document.getElementById('heroDescription').textContent = personal.description;
     document.getElementById('heroImage').src = personal.image;
+    document.getElementById('socialLinks').innerHTML = this.socialLinksHTML();
 
-    // Social Links
-    const socialLinksHTML = `
-      <a href="${personal.links.linkedin}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-        <i class="fab fa-linkedin"></i>
-      </a>
-      <a href="${personal.links.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-        <i class="fab fa-github"></i>
-      </a>
-      <a href="${personal.links.resume}" target="_blank" rel="noopener noreferrer" aria-label="Resume">
-        <i class="fas fa-file-alt"></i>
-      </a>
-    `;
-    document.getElementById('socialLinks').innerHTML = socialLinksHTML;
+    const statusLine = document.getElementById('statusLine');
+    if (personal.currently) {
+      statusLine.innerHTML = `
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="status-label">currently:</span>
+        <span class="status-value">${personal.currently.role} @ ${personal.currently.company}</span>
+      `;
+    } else {
+      statusLine.remove();
+    }
+
+    const statsEl = document.getElementById('heroStats');
+    if (stats && stats.length) {
+      statsEl.innerHTML = stats.map(stat => `
+        <div class="stat">
+          <span class="stat-value" data-value="${stat.value}">${stat.value}</span>
+          <span class="stat-label">${stat.label}</span>
+        </div>
+      `).join('');
+    } else {
+      statsEl.closest('.hero-stats-block').remove();
+    }
   }
 
   // Render Education Section
   renderEducation() {
     const educationHTML = this.data.education.map(edu => `
       <div class="education-card fade-in">
-        <div class="icon">${edu.icon}</div>
-        <h3>${edu.school}</h3>
-        <p class="degree">${edu.degree}</p>
-        <p class="date">${edu.date}</p>
-        <p class="location">${edu.location}</p>
+        ${edu.logo
+          ? `<div class="exp-logo edu-logo"><img src="${edu.logo}" alt="${edu.school} logo" loading="lazy" width="72" height="72"></div>`
+          : `<div class="icon">${edu.icon}</div>`}
+        <div class="edu-text">
+          <h3>${edu.school}</h3>
+          <p class="degree">${edu.degree}</p>
+          <p class="date"><i class="far fa-calendar"></i> ${edu.date}</p>
+          <p class="location"><i class="fas fa-location-dot"></i> ${edu.location}</p>
+        </div>
       </div>
     `).join('');
     document.getElementById('educationGrid').innerHTML = educationHTML;
   }
 
+  // "65K+ users migrated" -> "<strong>65K+</strong> users migrated"
+  metricsHTML(metrics) {
+    if (!metrics || !metrics.length) return '';
+    return `<div class="metrics">${metrics.map(m => {
+      const match = m.match(/^([$\d][^\s]*)\s+(.*)$/);
+      return `<span class="metric">${match ? `<strong>${match[1]}</strong> ${match[2]}` : m}</span>`;
+    }).join('')}</div>`;
+  }
+
+  // Collapsible region + its toggle button (animated via CSS grid rows)
+  detailsHTML(id, inner) {
+    return `<div class="details" id="${id}"><div class="details-inner">${inner}</div></div>`;
+  }
+
+  readMoreButton(id) {
+    return `
+      <button class="read-more" type="button" aria-expanded="false" aria-controls="${id}">
+        <span class="read-more-label">Read more</span><i class="fas fa-chevron-down" aria-hidden="true"></i>
+      </button>`;
+  }
+
   // Render Experience Timeline
   renderExperience() {
+    let earlierHeaderDone = false;
+
     const timelineHTML = this.data.experience.map((exp, index) => {
-      const featuredClass = exp.featured ? 'featured' : '';
+      const current = isCurrent(exp.date);
+      const classes = ['timeline-content'];
+      if (exp.featured) classes.push('featured');
+      if (current) classes.push('current');
+
       const companyDisplay = exp.link
         ? `<a href="${exp.link}" target="_blank" rel="noopener noreferrer">${exp.company}</a>`
         : exp.company;
 
       const highlightsHTML = exp.highlights.map(h => `<li>${h}</li>`).join('');
       const skillsHTML = exp.skills.map(s => `<span class="timeline-skill">${s}</span>`).join('');
+      const duration = formatDuration(exp.date);
 
-      // Create a unique ID for each experience item
       const expId = `exp-${index}`;
+      const detailsId = `${expId}-details`;
+
+      // Everything that hides behind "Read more"
+      const fullContent = `
+        ${exp.description ? `<p class="description">${exp.description}</p>` : ''}
+        <ul>${highlightsHTML}</ul>
+        <div class="timeline-skills">${skillsHTML}</div>
+      `;
+
+      // ---- Compact row for earlier roles ----
+      if (exp.earlier) {
+        const subhead = earlierHeaderDone ? '' : `
+          <div class="timeline-subhead">
+            <span class="prompt">$</span> ls experience/earlier/
+          </div>`;
+        earlierHeaderDone = true;
+
+        return `
+          ${subhead}
+          <div class="timeline-item compact fade-in" id="${expId}">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content compact">
+              <button class="compact-toggle" type="button" aria-expanded="false" aria-controls="${detailsId}">
+                ${exp.logo ? `<span class="exp-logo small"><img src="${exp.logo}" alt="" loading="lazy" width="40" height="40"></span>` : ''}
+                <span class="compact-text">
+                  <span class="compact-title">${exp.title}</span>
+                  <span class="compact-company">${exp.company} · ${exp.type}</span>
+                </span>
+                <span class="compact-date">${exp.date}${duration ? `<span class="duration">${duration}</span>` : ''}</span>
+                <i class="fas fa-chevron-down compact-chevron" aria-hidden="true"></i>
+              </button>
+              ${this.detailsHTML(detailsId, `
+                ${exp.summary ? `<p class="summary">${exp.summary}</p>` : ''}
+                ${this.metricsHTML(exp.metrics)}
+                ${fullContent}
+              `)}
+            </div>
+          </div>
+        `;
+      }
+
+      // Big banner style: dark header strip with one or more white logos
+      const bannerHTML = exp.banner && exp.banner.length ? `
+        <div class="exp-banner">
+          ${exp.banner.map((src, i) => `
+            ${i > 0 ? '<span class="exp-banner-sep" aria-hidden="true"></span>' : ''}
+            <img src="${src}" alt="${i === 0 ? `${exp.company} logo` : ''}" loading="lazy">
+          `).join('')}
+        </div>
+      ` : '';
+      if (bannerHTML) classes.push('has-banner');
+
+      // Small icon style: square logo tile next to the title
+      const logoHTML = exp.logo && !bannerHTML ? `
+        <div class="exp-logo">
+          <img src="${exp.logo}" alt="${exp.company} logo" loading="lazy" width="56" height="56">
+        </div>
+      ` : '';
 
       return `
         <div class="timeline-item fade-in" id="${expId}">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content ${featuredClass}">
-            <h3>${exp.title}</h3>
-            <p class="company">${companyDisplay}</p>
-            <span class="job-type">${exp.type}</span>
-            ${exp.description ? `<p class="description">${exp.description}</p>` : ''}
-            <ul>${highlightsHTML}</ul>
-            <div class="timeline-skills">${skillsHTML}</div>
+          <div class="timeline-dot${current ? ' current' : ''}"></div>
+          <div class="timeline-date">
+            ${exp.date}${duration ? `<span class="duration">· ${duration}</span>` : ''}
           </div>
-          <div class="timeline-date">${exp.date}</div>
+          <div class="${classes.join(' ')}">
+            ${bannerHTML}
+            <div class="exp-header">
+              ${logoHTML}
+              <div class="exp-header-text">
+                <div class="timeline-heading">
+                  <h3>${exp.title}</h3>
+                  ${current ? '<span class="current-badge"><span class="status-dot" aria-hidden="true"></span>Current</span>' : ''}
+                </div>
+                <p class="company">${companyDisplay}${exp.via ? ` <span class="via">${exp.via}</span>` : ''}</p>
+              </div>
+            </div>
+            <span class="job-type">${exp.type}</span>
+            ${exp.summary ? `
+              <p class="summary">${exp.summary}</p>
+              ${this.metricsHTML(exp.metrics)}
+              ${this.detailsHTML(detailsId, fullContent)}
+              ${this.readMoreButton(detailsId)}
+            ` : fullContent}
+          </div>
         </div>
       `;
     }).join('');
 
     document.getElementById('experienceTimeline').innerHTML = timelineHTML;
-
-    // Populate the navigation dropdown
     this.renderExperienceDropdown();
   }
 
   // Render Experience Dropdown in Navigation
   renderExperienceDropdown() {
-    const dropdownHTML = this.data.experience.map((exp, index) => {
-      const expId = `exp-${index}`;
-      return `
-        <a href="#${expId}" class="nav-dropdown-item">
-          <span class="nav-dropdown-item-title">${exp.title}</span>
-          <span class="nav-dropdown-item-company">${exp.company}</span>
-        </a>
-      `;
-    }).join('');
+    const dropdownHTML = this.data.experience.map((exp, index) => `
+      <a href="#exp-${index}" class="nav-dropdown-item">
+        <span class="nav-dropdown-item-title">
+          ${exp.title}${isCurrent(exp.date) ? '<span class="status-dot small" aria-label="current role"></span>' : ''}
+        </span>
+        <span class="nav-dropdown-item-company">${exp.company}</span>
+      </a>
+    `).join('');
 
     const dropdown = document.getElementById('experienceDropdown');
-    if (dropdown) {
-      dropdown.innerHTML = dropdownHTML;
-    }
+    if (dropdown) dropdown.innerHTML = dropdownHTML;
   }
 
   // Render Projects
   renderProjects() {
-    const projectsHTML = this.data.projects.map(project => {
+    const projectsHTML = this.data.projects.map((project, index) => {
+      const detailsId = `project-${index}-details`;
       const featuredClass = project.featured ? 'featured' : '';
       const skillsHTML = project.skills.map(s => `<span class="project-skill">${s}</span>`).join('');
 
-      // Handle multiple images or video
       let mediaHTML = '';
       if (project.video) {
-        mediaHTML = `<iframe class="project-video" src="${project.video}" title="${project.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+        mediaHTML = `<iframe class="project-video" src="${project.video}" title="${project.title}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
       } else if (project.image) {
-        mediaHTML = `<img src="${project.image}" alt="${project.title}" class="project-image" loading="lazy">`;
+        mediaHTML = `<div class="project-media"><img src="${project.image}" alt="${project.title}" class="project-image" loading="lazy"></div>`;
       }
 
-      // Project links
       let linksHTML = '';
       if (project.links) {
         const linkItems = [];
@@ -233,10 +440,14 @@ class ComponentRenderer {
             <i class="fas fa-external-link-alt"></i> Demo
           </a>`);
         }
-        if (linkItems.length > 0) {
-          linksHTML = `<div class="project-links">${linkItems.join('')}</div>`;
-        }
+        linksHTML = linkItems.join('');
       }
+
+      const fullContent = `
+        <p>${project.description}</p>
+        ${project.details ? `<p>${project.details}</p>` : ''}
+        <div class="project-skills">${skillsHTML}</div>
+      `;
 
       return `
         <div class="project-card ${featuredClass} fade-in">
@@ -245,10 +456,14 @@ class ComponentRenderer {
             <h3>${project.title}</h3>
             ${project.subtitle ? `<p class="subtitle">${project.subtitle}</p>` : ''}
             <p class="date">${project.date}</p>
-            <p>${project.description}</p>
-            ${project.details ? `<p>${project.details}</p>` : ''}
-            <div class="project-skills">${skillsHTML}</div>
-            ${linksHTML}
+            ${project.summary ? `
+              <p class="summary">${project.summary}</p>
+              ${this.detailsHTML(detailsId, fullContent)}
+            ` : fullContent}
+            <div class="project-footer">
+              ${project.summary ? this.readMoreButton(detailsId) : '<span></span>'}
+              ${linksHTML ? `<div class="project-links">${linksHTML}</div>` : ''}
+            </div>
           </div>
         </div>
       `;
@@ -259,98 +474,193 @@ class ComponentRenderer {
 
   // Render Skills
   renderSkills() {
-    // Programming Languages
-    const languagesHTML = this.data.skills.languages.map(skill => `
-      <div class="skill-item">
-        <span class="skill-name">${skill.name}</span>
-        <div class="skill-bar">
-          <div class="skill-progress ${skill.level}"></div>
+    const skillsHTML = this.data.skills.map(group => `
+      <div class="skill-category fade-in">
+        <h3 class="category-title">
+          <i class="fas ${group.icon}"></i> ${group.category}
+        </h3>
+        <div class="skills-list">
+          ${group.items.map(item =>
+            `<span class="skill-chip${item.core ? ' core' : ''}">${item.name}</span>`
+          ).join('')}
         </div>
       </div>
     `).join('');
-    document.getElementById('languageSkills').innerHTML = languagesHTML;
+    document.getElementById('skillsContainer').innerHTML = skillsHTML;
 
-    // Frameworks
-    const frameworksHTML = this.data.skills.frameworks.map(skill => `
-      <div class="skill-item">
-        <span class="skill-name">${skill.name}</span>
-        <div class="skill-bar">
-          <div class="skill-progress ${skill.level}"></div>
-        </div>
-      </div>
-    `).join('');
-    document.getElementById('frameworkSkills').innerHTML = frameworksHTML;
+    document.getElementById('softSkills').innerHTML = this.data.softSkills
+      .map(skill => `<div class="soft-skill">${skill}</div>`).join('');
 
-    // Technologies
-    const technologiesHTML = this.data.skills.technologies.map(skill => `
-      <div class="skill-item">
-        <span class="skill-name">${skill.name}</span>
-        <div class="skill-bar">
-          <div class="skill-progress ${skill.level}"></div>
-        </div>
-      </div>
-    `).join('');
-    document.getElementById('technologySkills').innerHTML = technologiesHTML;
-
-    // Soft Skills
-    const softSkillsHTML = this.data.skills.softSkills.map(skill => `
-      <div class="soft-skill">${skill}</div>
-    `).join('');
-    document.getElementById('softSkills').innerHTML = softSkillsHTML;
-
-    // Spoken Languages
-    const spokenLanguagesHTML = this.data.spokenLanguages.map(lang => `
+    document.getElementById('spokenLanguages').innerHTML = this.data.spokenLanguages.map(lang => `
       <div class="language-item">
         <div class="language-name">${lang.language}</div>
         <div class="language-proficiency">${lang.proficiency}</div>
       </div>
     `).join('');
-    document.getElementById('spokenLanguages').innerHTML = spokenLanguagesHTML;
   }
 
   // Render Contact Section
   renderContact() {
     const { personal } = this.data;
+    const telHref = personal.phone.replace(/[^\d+]/g, '');
 
-    const contactInfoHTML = `
+    document.getElementById('contactInfo').innerHTML = `
       <div class="contact-item">
         <i class="fas fa-envelope"></i>
         <a href="mailto:${personal.email}">${personal.email}</a>
+        <button class="copy-btn" type="button" data-copy="${personal.email}" aria-label="Copy email address" title="Copy email">
+          <i class="far fa-copy"></i>
+        </button>
       </div>
       <div class="contact-item">
         <i class="fas fa-phone"></i>
-        <span>${personal.phone}</span>
+        <a href="tel:${telHref}">${personal.phone}</a>
       </div>
       <div class="contact-item">
         <i class="fas fa-map-marker-alt"></i>
         <span>${personal.location}</span>
       </div>
     `;
-    document.getElementById('contactInfo').innerHTML = contactInfoHTML;
 
-    // Social Links (Large)
-    const socialLinksHTML = `
-      <a href="${personal.links.linkedin}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-        <i class="fab fa-linkedin"></i>
-      </a>
-      <a href="${personal.links.github}" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-        <i class="fab fa-github"></i>
-      </a>
-      <a href="${personal.links.resume}" target="_blank" rel="noopener noreferrer" aria-label="Resume">
-        <i class="fas fa-file-alt"></i>
-      </a>
-    `;
-    document.getElementById('contactSocialLinks').innerHTML = socialLinksHTML;
+    document.getElementById('contactSocialLinks').innerHTML = this.socialLinksHTML();
+
+    document.getElementById('contactInfo').addEventListener('click', async (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if (!btn) return;
+      const icon = btn.querySelector('i');
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        icon.className = 'fas fa-check';
+        btn.classList.add('copied');
+      } catch (err) {
+        window.location.href = `mailto:${btn.dataset.copy}`;
+        return;
+      }
+      setTimeout(() => {
+        icon.className = 'far fa-copy';
+        btn.classList.remove('copied');
+      }, 1800);
+    });
   }
 
-  // Render all components
+  renderFooter() {
+    const year = document.getElementById('footerYear');
+    if (year) year.textContent = new Date().getFullYear();
+  }
+
   renderAll() {
     this.renderHero();
-    this.renderEducation();
     this.renderExperience();
     this.renderProjects();
     this.renderSkills();
+    this.renderEducation();
     this.renderContact();
+    this.renderFooter();
+  }
+}
+
+// ============================================
+// READ MORE / COMPACT ROW TOGGLES
+// One delegated handler for every collapsible block on the page.
+// ============================================
+class DetailsToggle {
+  constructor() {
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.read-more, .compact-toggle');
+      if (!btn) return;
+
+      const region = document.getElementById(btn.getAttribute('aria-controls'));
+      if (!region) return;
+
+      const open = region.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+      btn.closest('.timeline-content, .project-card')?.classList.toggle('expanded', open);
+
+      const label = btn.querySelector('.read-more-label');
+      if (label) label.textContent = open ? 'Show less' : 'Read more';
+
+      // Collapsing a long card can leave the reader scrolled past it;
+      // bring the card back into view if its top went above the navbar.
+      if (!open) {
+        const card = btn.closest('.timeline-content, .project-card');
+        const navH = navBarHeight();
+        const top = card.getBoundingClientRect().top;
+        if (top < navH) {
+          window.scrollBy({ top: top - navH - 16, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        }
+      }
+    });
+  }
+}
+
+// ============================================
+// HERO INTRO (types the command, then reveals the content)
+// ============================================
+class HeroIntro {
+  constructor() {
+    this.command = document.getElementById('heroCommand');
+    this.reveal = document.getElementById('heroReveal');
+  }
+
+  start() {
+    if (!this.command || !this.reveal || prefersReducedMotion) return;
+
+    const text = this.command.dataset.text;
+    this.reveal.classList.add('pending');
+    this.command.textContent = '';
+
+    let i = 0;
+    const type = () => {
+      if (i < text.length) {
+        this.command.textContent += text.charAt(i++);
+        setTimeout(type, 38 + Math.random() * 40);
+      } else {
+        setTimeout(() => this.reveal.classList.remove('pending'), 180);
+      }
+    };
+    setTimeout(type, 250);
+  }
+}
+
+// ============================================
+// STAT COUNTERS (count up when scrolled into view)
+// ============================================
+class StatCounter {
+  constructor() {
+    this.stats = document.querySelectorAll('.stat-value[data-value]');
+  }
+
+  start() {
+    if (!this.stats.length || prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        this.animate(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.6 });
+
+    this.stats.forEach(el => observer.observe(el));
+  }
+
+  // "$130K+" -> prefix "$", number 130, suffix "K+"
+  animate(el) {
+    const match = el.dataset.value.match(/^([^\d]*)([\d.,]+)(.*)$/);
+    if (!match) return;
+    const [, prefix, numStr, suffix] = match;
+    const target = parseFloat(numStr.replace(/,/g, ''));
+    const duration = 1200;
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = `${prefix}${Math.round(target * eased).toLocaleString()}${suffix}`;
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = el.dataset.value;
+    };
+    requestAnimationFrame(tick);
   }
 }
 
@@ -358,102 +668,74 @@ class ComponentRenderer {
 // INTERSECTION OBSERVER (Fade-in animations)
 // ============================================
 class AnimationObserver {
-  constructor() {
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-  }
-
   observe() {
-    // Wait a bit for DOM to be fully rendered
-    setTimeout(() => {
-      const fadeElements = document.querySelectorAll('.fade-in');
-      fadeElements.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-        this.observer.observe(el);
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          el.classList.add('visible');
+          observer.unobserve(el);
+          // Hand control back to the element's own hover transitions
+          setTimeout(() => el.classList.remove('will-fade', 'visible'), 700);
+        }
       });
-    }, 100);
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+      el.classList.add('will-fade');
+      observer.observe(el);
+    });
   }
 }
 
 // ============================================
-// NAVBAR SCROLL EFFECT
+// SCROLL EFFECTS (navbar shadow, progress bar, indicator, active link)
 // ============================================
-class NavbarScroll {
+class ScrollEffects {
   constructor() {
     this.navbar = document.getElementById('navbar');
-    this.lastScroll = 0;
-    this.init();
-  }
-
-  init() {
-    window.addEventListener('scroll', () => {
-      const currentScroll = window.pageYOffset;
-
-      // Add shadow when scrolled
-      if (currentScroll > 50) {
-        this.navbar.style.boxShadow = '0 4px 30px var(--shadow)';
-      } else {
-        this.navbar.style.boxShadow = '0 4px 20px var(--shadow)';
-      }
-
-      this.lastScroll = currentScroll;
-    });
-  }
-}
-
-// ============================================
-// SCROLL INDICATOR
-// ============================================
-class ScrollIndicator {
-  constructor() {
+    this.progress = document.getElementById('scrollProgress');
     this.indicator = document.querySelector('.scroll-indicator');
-    this.init();
+    this.sections = document.querySelectorAll('section[id]');
+    this.navLinks = document.querySelectorAll('.nav-link, .mobile-link');
+    this.ticking = false;
+
+    window.addEventListener('scroll', () => this.requestUpdate(), { passive: true });
+    window.addEventListener('resize', () => this.requestUpdate(), { passive: true });
+    this.update();
   }
 
-  init() {
-    window.addEventListener('scroll', () => {
-      if (window.pageYOffset > 100) {
-        this.indicator.style.opacity = '0';
-      } else {
-        this.indicator.style.opacity = '1';
-      }
+  requestUpdate() {
+    if (this.ticking) return;
+    this.ticking = true;
+    requestAnimationFrame(() => {
+      this.update();
+      this.ticking = false;
     });
   }
-}
 
-// ============================================
-// TYPING EFFECT (Optional - for hero title)
-// ============================================
-class TypingEffect {
-  constructor(element, text, speed = 100) {
-    this.element = element;
-    this.text = text;
-    this.speed = speed;
-    this.index = 0;
-  }
+  update() {
+    const y = window.pageYOffset;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
 
-  type() {
-    if (this.index < this.text.length) {
-      this.element.textContent += this.text.charAt(this.index);
-      this.index++;
-      setTimeout(() => this.type(), this.speed);
-    }
-  }
+    this.navbar.classList.toggle('scrolled', y > 50);
+    if (this.progress) this.progress.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+    if (this.indicator) this.indicator.style.opacity = y > 100 ? '0' : '1';
 
-  start() {
-    this.element.textContent = '';
-    this.type();
+    // Active nav link
+    const offset = navBarHeight() + 120;
+    let current = 'home';
+    this.sections.forEach(section => {
+      if (y + offset >= section.offsetTop) current = section.id;
+    });
+    // Bottom of the page: last section wins
+    if (max > 0 && y >= max - 4) current = this.sections[this.sections.length - 1].id;
+
+    this.navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+    });
   }
 }
 
@@ -461,75 +743,21 @@ class TypingEffect {
 // INITIALIZE EVERYTHING
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Check if portfolioData is available
   if (typeof portfolioData === 'undefined') {
     console.error('Portfolio data not loaded! Make sure data.js is loaded before script.js');
     return;
   }
 
-  // Initialize all components
-  const themeManager = new ThemeManager();
-  const mobileMenu = new MobileMenu();
-  const smoothScroll = new SmoothScroll();
-  const renderer = new ComponentRenderer(portfolioData);
+  new ThemeManager();
+  new MobileMenu();
+  new SmoothScroll();
 
-  // Render all content
+  const renderer = new ComponentRenderer(portfolioData);
   renderer.renderAll();
 
-  // Initialize animations and effects
-  const animationObserver = new AnimationObserver();
-  animationObserver.observe();
-
-  const navbarScroll = new NavbarScroll();
-  const scrollIndicator = new ScrollIndicator();
-
-  // Optional: Add typing effect to hero title
-  // Uncomment if you want the typing effect
-  // setTimeout(() => {
-  //   const heroTitle = document.getElementById('heroTitle');
-  //   const typingEffect = new TypingEffect(heroTitle, portfolioData.personal.name, 100);
-  //   typingEffect.start();
-  // }, 500);
-
-  console.log('🚀 Portfolio loaded successfully!');
+  new DetailsToggle();
+  new HeroIntro().start();
+  new StatCounter().start();
+  new AnimationObserver().observe();
+  new ScrollEffects();
 });
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
-
-// Add active state to nav links based on scroll position
-window.addEventListener('scroll', () => {
-  const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.nav-link');
-
-  let current = '';
-  sections.forEach(section => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.clientHeight;
-    if (window.pageYOffset >= sectionTop - 100) {
-      current = section.getAttribute('id');
-    }
-  });
-
-  navLinks.forEach(link => {
-    link.classList.remove('active');
-    if (link.getAttribute('href') === `#${current}`) {
-      link.classList.add('active');
-    }
-  });
-});
-
-// Prevent default form submission if you add a contact form later
-const forms = document.querySelectorAll('form');
-forms.forEach(form => {
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    // Add your form handling logic here
-  });
-});
-
-// Log theme changes for debugging
-if (localStorage.getItem('theme')) {
-  console.log(`Theme loaded from localStorage: ${localStorage.getItem('theme')}`);
-}

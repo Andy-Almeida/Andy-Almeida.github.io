@@ -21,10 +21,8 @@ Andy-Almeida.github.io/
 ├── script.js           # Interactive functionality and component rendering
 ├── data.js            # ⭐ YOUR CONTENT GOES HERE - Edit this to update your portfolio
 ├── static/            # Images and assets
-│   ├── andyalmeidabestselfie.PNG
-│   ├── GithubIcon.png
-│   ├── LinkedInIcon.png
-│   ├── ResumeIcon.png
+│   ├── andy-almeida-headshot.jpg
+│   ├── logos/         # Company & school logos (small tiles + white banner wordmarks)
 │   └── [project images]
 └── README.md          # This file
 ```
@@ -47,7 +45,7 @@ Andy-Almeida.github.io/
 {
   title: "Your Job Title",
   company: "Company Name",
-  location: "City, State/Remote",
+  via: "via Staffing Agency", // Optional
   date: "Month Year - Present/Month Year",
   type: "Full-time", // or "Part-time", "Contract", etc.
   description: "Brief description of the company or role",
@@ -107,29 +105,64 @@ personal: {
 
 ### Adding New Skills
 
+Skills are grouped into categories. Each category becomes a card; `core: true`
+highlights a skill you use day to day.
+
 ```javascript
-// In data.js, find the skills object:
-skills: {
-  languages: [
-    { name: "Python", level: "advanced" }, // "advanced", "intermediate", or "beginner"
-    { name: "New Language", level: "intermediate" }
-  ],
-  frameworks: [
-    { name: "React.js", level: "advanced" }
-  ],
-  technologies: [
-    { name: "Docker", level: "beginner" }
-  ],
-  softSkills: [
-    "New Soft Skill"
-  ]
+// In data.js, find the skills array:
+skills: [
+  {
+    category: "Cloud & DevOps",
+    icon: "fa-cloud", // any Font Awesome solid icon
+    items: [
+      { name: "Terraform", core: true },
+      { name: "Datadog" }
+    ]
+  }
+],
+softSkills: [
+  "New Soft Skill"
+]
+```
+
+### Hero Status Line & Impact Stats
+
+```javascript
+personal: {
+  // ...
+  currently: { role: "Software Engineer", company: "Pioneer · Corteva Agriscience" }
+},
+stats: [
+  { value: "65K+", label: "users migrated across Azure tenants" } // numbers count up on load
+]
+```
+
+Experience `date` values must look like `"June 2026 - Present"` or
+`"October 2025 - June 2026"`. Durations (e.g. `6 mos`) and the **Current**
+badge are calculated automatically.
+
+### Keeping Cards Skimmable
+
+Experience and project cards show a short version by default; the rest sits
+behind a **Read more** toggle.
+
+```javascript
+{
+  summary: "One sentence on what you did.",          // always visible
+  metrics: ["65K+ users migrated", "5 AWS envs"],     // always visible (experience only);
+                                                      // a leading number is bolded
+  description: "...", highlights: [...], skills: [...], // revealed by "Read more"
+  earlier: true                                       // experience only: compact row under
+                                                      // "Earlier experience"
 }
 ```
+
+Leave out `summary` and the card simply shows everything, with no toggle.
 
 ## 🎨 Theme Customization
 
 The website features two themes:
-- **Light Mode**: Green accents (#00ff00)
+- **Light Mode**: Green accents (#15803d)
 - **Dark Mode**: Pink accents (#ff1493)
 
 ### Want to change the accent colors?
