@@ -17,7 +17,9 @@ const portfolioData = {
     // Shown as a live "status" line in the hero
     currently: {
       role: "Software Engineer",
-      company: "Pioneer · Corteva Agriscience"
+      company: "Pioneer · Corteva Agriscience",
+      companyShort: "Pioneer · Corteva", // used when space is tight (the line never wraps)
+      companyTiny: "Corteva"            // used on very small phones
     },
     email: "andyalmeida191@gmail.com",
     phone: "+1 (949)836-6193",

@@ -614,14 +614,22 @@ a:hover {
   position: relative;
 }
 
+/* The ring and the photo are both absolutely positioned inside one square,
+   so they're always concentric. The square comes from the padding-top trick
+   (works in every browser) instead of aspect-ratio + percentage heights,
+   which some mobile browsers resolve differently. */
 .image-container {
   position: relative;
   width: 100%;
   max-width: 360px;
-  aspect-ratio: 1 / 1;
   margin: 0 auto;
   border-radius: 50%;
-  padding: 10px;
+}
+
+.image-container::before {
+  content: '';
+  display: block;
+  padding-top: 100%;
 }
 
 /* Rotating gradient ring around the portrait */
@@ -649,20 +657,26 @@ a:hover {
 }
 
 .image-container img {
-  position: relative;
+  position: absolute;
   z-index: 1;
+  top: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
   display: block;
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  object-position: center;
   border-radius: 50%;
   border: 3px solid var(--terminal-bg);
   box-shadow: 0 0 50px var(--accent-glow);
   transition: transform var(--transition-slow);
 }
 
-.image-container:hover img {
-  transform: scale(1.025);
+/* Only on devices with a real hover (on phones :hover can "stick" after a tap) */
+@media (hover: hover) {
+  .image-container:hover img {
+    transform: scale(1.025);
+  }
 }
 
 @keyframes spin {
@@ -1611,12 +1625,30 @@ section {
   visibility: hidden;
 }
 
-/* While the cursor travels through the text it takes up no width */
+/* While the cursor travels through the text it must not affect layout.
+   An inline-block is an "atomic inline", which browsers treat as a line-break
+   opportunity, so mid-word it could briefly wrap the line at the cursor.
+   Instead: an empty plain inline (never a break point, zero width) with the
+   block drawn by an absolutely positioned pseudo-element. */
 .hero-reveal .cursor {
-  margin-left: 0.05em;
-  margin-right: -0.65em;
-  height: 1em;
-  vertical-align: -0.12em;
+  display: inline;
+  position: relative;
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: none;
+  vertical-align: baseline;
+}
+
+.hero-reveal .cursor::after {
+  content: '';
+  position: absolute;
+  left: 0.06em;
+  top: 0.12em;
+  bottom: 0.08em;
+  width: 0.55em;
+  background: var(--terminal-text);
+  pointer-events: none;
 }
 
 /* Buttons + social icons fade in after the typing finishes */
@@ -1635,7 +1667,9 @@ section {
 /* Hero: "currently" status line */
 .status-line {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  max-width: 100%;
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.85rem;
@@ -1655,6 +1689,7 @@ section {
   color: #e6e6e6;
   font-weight: 500;
 }
+
 
 .status-dot {
   position: relative;
@@ -2402,11 +2437,6 @@ section {
     padding: 0.8rem;
   }
 
-  .status-line {
-    font-size: 0.75rem;
-    border-radius: 12px;
-  }
-
   .image-container {
     max-width: 240px;
   }
@@ -2466,5 +2496,57 @@ section {
 
   .nav-link {
     font-size: 0.85rem;
+  }
+}
+
+/* ============================================
+   HERO STATUS PILL: always one line. As the hero's text column narrows it
+   drops words instead of wrapping, then shrinks the font a touch.
+   Thresholds are based on the column width (container queries), not the
+   screen, so mid-size desktop windows behave too.
+   ============================================ */
+.hero-text {
+  container-type: inline-size;
+}
+
+.status-line .co-short,
+.status-line .co-tiny {
+  display: none;
+}
+
+/* Medium: drop the "currently:" label (the pulsing dot already says it) */
+@container (max-width: 545px) {
+  .status-line .status-label {
+    display: none;
+  }
+}
+
+/* Narrow: shorter company name; below ~340px also scale the font to fit */
+@container (max-width: 445px) {
+  .status-line .co-long {
+    display: none;
+  }
+
+  .status-line .co-short {
+    display: inline;
+  }
+
+  .status-line {
+    font-size: min(0.82rem, calc((100cqi - 44px) / 23));
+  }
+}
+
+/* Very narrow (small phones): just the parent brand, so the font can stay readable */
+@container (max-width: 300px) {
+  .status-line .co-short {
+    display: none;
+  }
+
+  .status-line .co-tiny {
+    display: inline;
+  }
+
+  .status-line {
+    font-size: min(0.82rem, calc((100cqi - 44px) / 17));
   }
 }

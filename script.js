@@ -228,7 +228,7 @@ class ComponentRenderer {
       statusLine.innerHTML = `
         <span class="status-dot" aria-hidden="true"></span>
         <span class="status-label">currently:</span>
-        <span class="status-value">${personal.currently.role} @ ${personal.currently.company}</span>
+        <span class="status-value">${personal.currently.role} @ <span class="co-long">${personal.currently.company}</span><span class="co-short">${personal.currently.companyShort || personal.currently.company}</span><span class="co-tiny">${personal.currently.companyTiny || personal.currently.companyShort || personal.currently.company}</span></span>
       `;
     } else {
       statusLine.remove();
@@ -673,8 +673,9 @@ class HeroIntro {
 
     this.reveal.classList.add('typing');
 
-    // Skip on any interaction
-    this.skipEvents = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+    // Skip only on a deliberate click/tap. Scrolling is allowed while it types.
+    // ('click' never fires for a scroll gesture, unlike pointerdown/touchstart.)
+    this.skipEvents = ['click'];
     this.onSkip = () => this.finish();
     this.skipEvents.forEach(ev => window.addEventListener(ev, this.onSkip, { passive: true }));
 
@@ -690,13 +691,13 @@ class HeroIntro {
 
   async run() {
     const text = this.command.dataset.text;
-    await this.sleep(250);
+    await this.sleep(150);
     for (const ch of text) {
       if (this.skipped) return;
       this.command.textContent += ch;
-      await this.sleep(38 + Math.random() * 40);
+      await this.sleep(24 + Math.random() * 26);
     }
-    await this.sleep(220);
+    await this.sleep(160);
 
     for (const [selector, ms, perTick] of this.steps) {
       if (this.skipped) return;
@@ -713,8 +714,11 @@ class HeroIntro {
   async typeInto(el, ms, perTick) {
     // Skip whitespace-only nodes (template indentation): wrapping them in
     // spans would turn them into flex items and add gaps in the status pill.
+    // Also skip text that isn't displayed at this width (e.g. the long/short
+    // company variants in the status pill), so there's no invisible "typing" pause.
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
-      acceptNode: n => (n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT)
+      acceptNode: n => (n.nodeValue.trim() && n.parentElement.getClientRects().length
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT)
     });
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
@@ -739,7 +743,7 @@ class HeroIntro {
         const chunk = rest.textContent.slice(0, perTick);
         typed.textContent += chunk;
         rest.textContent = rest.textContent.slice(perTick);
-        if (chunk.trim()) await this.sleep(ms);   // whitespace prints instantly
+        await this.sleep(ms);   // spaces get a beat too, so the rhythm stays even
       }
     }
   }
