@@ -1,1 +1,11 @@
-./claude
+# Local editor / tool settings
+.claude/
+.vs/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local test files
+_harness_tmp.html
