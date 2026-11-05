@@ -1601,13 +1601,35 @@ section {
   }
 }
 
-.hero-reveal {
+/* Typed intro: each line stays hidden until HeroIntro starts typing it */
+.hero-reveal.typing :is(.status-line, .hero-title, .hero-subtitle, .hero-description):not(.tw-on) {
+  visibility: hidden;
+}
+
+/* Not-yet-typed characters keep their space so lines never reflow */
+.tw-rest {
+  visibility: hidden;
+}
+
+/* While the cursor travels through the text it takes up no width */
+.hero-reveal .cursor {
+  margin-left: 0.05em;
+  margin-right: -0.65em;
+  height: 1em;
+  vertical-align: -0.12em;
+}
+
+/* Buttons + social icons fade in after the typing finishes */
+.hero-cta,
+.social-links {
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.hero-reveal.pending {
+.hero-reveal.typing .hero-cta,
+.hero-reveal.typing .social-links {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
+  pointer-events: none;
 }
 
 /* Hero: "currently" status line */
@@ -2041,6 +2063,59 @@ section {
 .read-more:hover .read-more-label {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+/* Projects: click-to-play video poster */
+.video-poster {
+  position: relative;
+  cursor: pointer;
+  background: #000;
+}
+
+.video-poster::after {
+  /* subtle darkening so the play button pops on any photo */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.35));
+  pointer-events: none;
+}
+
+.video-poster.playing::after {
+  display: none;
+}
+
+.play-btn {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 68px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 4px; /* optically center the play triangle */
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), 0 0 24px var(--accent-glow);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.video-poster:hover .play-btn,
+.play-btn:focus-visible {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4), 0 0 32px var(--accent-glow);
+}
+
+.video-poster .project-video {
+  display: block;
+  border-bottom: none;
 }
 
 /* Projects: read more on the left, links on the right */

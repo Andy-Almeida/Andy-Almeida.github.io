@@ -420,23 +420,41 @@ class ComponentRenderer {
       const featuredClass = project.featured ? 'featured' : '';
       const skillsHTML = project.skills.map(s => `<span class="project-skill">${s}</span>`).join('');
 
+      // Video: show a poster with a play button; the YouTube player only loads
+      // on click. Keeps the card size stable even when a browser or extension
+      // blocks YouTube, and skips ~1MB of YouTube scripts on page load.
+      const videoId = project.video ? (project.video.match(/(?:embed\/|v=|youtu\.be\/)([\w-]{6,})/) || [])[1] : null;
+
       let mediaHTML = '';
-      if (project.video) {
-        mediaHTML = `<iframe class="project-video" src="${project.video}" title="${project.title}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+      if (videoId) {
+        const poster = project.image || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        mediaHTML = `
+          <div class="project-media video-poster" data-video-id="${videoId}" data-title="${project.title}">
+            <img src="${poster}" alt="${project.title} video preview" class="project-image" loading="lazy">
+            <button class="play-btn" type="button" aria-label="Play video: ${project.title}">
+              <i class="fas fa-play" aria-hidden="true"></i>
+            </button>
+          </div>`;
       } else if (project.image) {
         mediaHTML = `<div class="project-media"><img src="${project.image}" alt="${project.title}" class="project-image" loading="lazy"></div>`;
       }
 
       let linksHTML = '';
-      if (project.links) {
+      if (project.links || videoId) {
         const linkItems = [];
-        if (project.links.github) {
-          linkItems.push(`<a href="${project.links.github}" target="_blank" rel="noopener noreferrer" class="project-link">
+        if (videoId) {
+          linkItems.push(`<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" rel="noopener noreferrer" class="project-link">
+            <i class="fab fa-youtube"></i> Video
+          </a>`);
+        }
+        const links = project.links || {};
+        if (links.github) {
+          linkItems.push(`<a href="${links.github}" target="_blank" rel="noopener noreferrer" class="project-link">
             <i class="fab fa-github"></i> GitHub
           </a>`);
         }
-        if (project.links.demo) {
-          linkItems.push(`<a href="${project.links.demo}" target="_blank" rel="noopener noreferrer" class="project-link">
+        if (links.demo) {
+          linkItems.push(`<a href="${links.demo}" target="_blank" rel="noopener noreferrer" class="project-link">
             <i class="fas fa-external-link-alt"></i> Demo
           </a>`);
         }
@@ -594,31 +612,161 @@ class DetailsToggle {
 }
 
 // ============================================
-// HERO INTRO (types the command, then reveals the content)
+// VIDEO POSTERS (click to load the YouTube player)
+// ============================================
+class VideoPoster {
+  constructor() {
+    document.addEventListener('click', (e) => {
+      const poster = e.target.closest('.video-poster');
+      if (!poster || poster.classList.contains('playing')) return;
+
+      const id = poster.dataset.videoId;
+      const iframe = document.createElement('iframe');
+      iframe.className = 'project-video';
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+      iframe.title = poster.dataset.title || 'Project video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+
+      poster.classList.add('playing');
+      poster.replaceChildren(iframe);
+      iframe.focus();
+    });
+  }
+}
+
+// ============================================
+// HERO INTRO
+// Types the command like a person, then "prints" the output: status line,
+// name, tagline and description. Buttons fade in at the end.
+//  - Layout never jumps: each text node is split into a visible "typed" span
+//    and an invisible "rest" span, so the full text is laid out from the start.
+//  - Any click / key / scroll / touch skips straight to the end.
+//  - Reduced-motion users see everything immediately.
 // ============================================
 class HeroIntro {
   constructor() {
     this.command = document.getElementById('heroCommand');
     this.reveal = document.getElementById('heroReveal');
+    this.cursor = document.querySelector('.command-line .cursor');
+    this.pairs = [];        // [{ typed, rest }] for every text node we've split
+    this.done = false;
+    this.skipped = false;
+
+    // [selector, ms per tick, characters per tick]
+    this.steps = [
+      ['#statusLine', 14, 2],
+      ['#heroTitle', 45, 1],
+      ['#heroSubtitle', 16, 1],
+      ['#heroDescription', 16, 4]
+    ];
   }
 
   start() {
-    if (!this.command || !this.reveal || prefersReducedMotion) return;
+    if (!this.command || !this.reveal) return;
 
+    if (prefersReducedMotion) {
+      this.finish();
+      return;
+    }
+
+    this.reveal.classList.add('typing');
+
+    // Skip on any interaction
+    this.skipEvents = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+    this.onSkip = () => this.finish();
+    this.skipEvents.forEach(ev => window.addEventListener(ev, this.onSkip, { passive: true }));
+
+    // Safety net: never leave the hero half-typed
+    setTimeout(() => this.finish(), 9000);
+
+    this.run();
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, this.skipped ? 0 : ms));
+  }
+
+  async run() {
     const text = this.command.dataset.text;
-    this.reveal.classList.add('pending');
-    this.command.textContent = '';
+    await this.sleep(250);
+    for (const ch of text) {
+      if (this.skipped) return;
+      this.command.textContent += ch;
+      await this.sleep(38 + Math.random() * 40);
+    }
+    await this.sleep(220);
 
-    let i = 0;
-    const type = () => {
-      if (i < text.length) {
-        this.command.textContent += text.charAt(i++);
-        setTimeout(type, 38 + Math.random() * 40);
-      } else {
-        setTimeout(() => this.reveal.classList.remove('pending'), 180);
+    for (const [selector, ms, perTick] of this.steps) {
+      if (this.skipped) return;
+      const el = document.querySelector(selector);
+      if (!el) continue;
+      await this.typeInto(el, ms, perTick);
+      await this.sleep(110);
+    }
+    this.finish();
+  }
+
+  // Split every text node in `el` into typed/rest spans, then move characters
+  // from rest -> typed, carrying the cursor along.
+  async typeInto(el, ms, perTick) {
+    // Skip whitespace-only nodes (template indentation): wrapping them in
+    // spans would turn them into flex items and add gaps in the status pill.
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => (n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT)
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    const pairs = nodes.map(node => {
+      const typed = document.createElement('span');
+      const rest = document.createElement('span');
+      typed.className = 'tw-typed';
+      rest.className = 'tw-rest';
+      rest.textContent = node.nodeValue;
+      node.replaceWith(typed, rest);
+      return { typed, rest };
+    });
+    this.pairs.push(...pairs);
+    el.classList.add('tw-on');
+
+    for (const { typed, rest } of pairs) {
+      if (this.skipped) return;
+      if (this.cursor) typed.after(this.cursor);
+      while (rest.textContent.length) {
+        if (this.skipped) return;
+        const chunk = rest.textContent.slice(0, perTick);
+        typed.textContent += chunk;
+        rest.textContent = rest.textContent.slice(perTick);
+        if (chunk.trim()) await this.sleep(ms);   // whitespace prints instantly
       }
-    };
-    setTimeout(type, 250);
+    }
+  }
+
+  finish() {
+    if (this.done) return;
+    this.done = true;
+    this.skipped = true;
+
+    this.command.textContent = this.command.dataset.text;
+    this.pairs.forEach(({ typed, rest }) => {
+      typed.textContent += rest.textContent;
+      rest.textContent = '';
+    });
+    this.steps.forEach(([selector]) => {
+      const el = document.querySelector(selector);
+      if (el) el.classList.add('tw-on');
+    });
+
+    // Leave the cursor blinking at the end of the description
+    const desc = document.getElementById('heroDescription');
+    if (this.cursor && desc && !prefersReducedMotion) desc.appendChild(this.cursor);
+
+    this.reveal.classList.remove('typing');
+    if (this.skipEvents) {
+      this.skipEvents.forEach(ev => window.removeEventListener(ev, this.onSkip));
+    }
   }
 }
 
@@ -748,6 +896,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  // Start the hero intro first so the hero can never stay hidden
+  // if anything later in startup throws.
+  new HeroIntro().start();
+
   new ThemeManager();
   new MobileMenu();
   new SmoothScroll();
@@ -756,7 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderer.renderAll();
 
   new DetailsToggle();
-  new HeroIntro().start();
+  new VideoPoster();
   new StatCounter().start();
   new AnimationObserver().observe();
   new ScrollEffects();

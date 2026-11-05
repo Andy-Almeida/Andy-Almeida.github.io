@@ -141,10 +141,11 @@
                     <div class="hero-text">
                         <div class="command-line">
                             <span class="prompt">visitor@portfolio:~$</span>
-                            <span class="command" id="heroCommand" data-text="cat introduction.txt">cat introduction.txt</span><span class="cursor" aria-hidden="true"></span>
+                            <span class="command" id="heroCommand" data-text="cat introduction.txt"></span><span class="cursor" aria-hidden="true"></span>
                         </div>
 
-                        <div class="hero-reveal" id="heroReveal">
+                        <!-- "typing": text stays hidden until the intro types it out (see HeroIntro in script.js) -->
+                        <div class="hero-reveal typing" id="heroReveal">
                             <div class="status-line" id="statusLine">
                                 <!-- Populated by JavaScript -->
                             </div>
